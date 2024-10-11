@@ -35,7 +35,7 @@ def read_and_clean_fasta(directory):
 def cgr(seq, order, k):
     ln = len(seq)
     pw = 2**k
-    out = [[0 for i in range(pw)] for j in range(pw)]
+    out = [[0 for _ in range(pw)] for _ in range(pw)]
     
     x = 2**(k-1)
     y = 2**(k-1)
@@ -64,12 +64,17 @@ def compute_distance_matrix(cgr_matrices):
     return distance_matrix
 
 # Function to plot CGR
-def plot_cgr(cgr_matrix, sequence_name, k, save_path):
+def plot_cgr(cgr_matrix, sequence_name, k, save_path, include_labels=True):
     plt.figure(figsize=(6, 6))
     plt.imshow(cgr_matrix, cmap='gray', interpolation='nearest')  # Use grayscale
-    plt.title(f'CGR Plot for {sequence_name} (k={k})')
-    plt.colorbar(label='Frequency')
-    plt.savefig(save_path)
+    if include_labels:
+        plt.title(f'CGR Frequency for {sequence_name} (k={k})')
+        plt.colorbar(label='Frequency')
+        # Axes labels and ticks are included by default
+    else:
+        plt.title(f'CGR Plot for {sequence_name} (k={k})')
+        plt.axis('off')  # Remove axes
+    plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
     plt.close()
 
 # Set base paths and directories
@@ -114,8 +119,12 @@ def generate_and_save_cgr_plots_for_sequences(sequences, genome_name):
         for k in k_values:
             cgr_matrix = cgr(seq, alphabet, k)
             sequence_name = f"{genome_name}_seq_{idx + 1}"
+            # Save CGR plot with labels and numbers
             save_path = os.path.join(output_dir, f"{sequence_name}_k{k}.png")
-            plot_cgr(cgr_matrix, sequence_name, k, save_path)
+            plot_cgr(cgr_matrix, sequence_name, k, save_path, include_labels=True)
+            # Save CGR plot without labels and numbers
+            save_path_no_labels = os.path.join(output_dir, f"{sequence_name}_k{k}_nolabels.png")
+            plot_cgr(cgr_matrix, sequence_name, k, save_path_no_labels, include_labels=False)
 
 # Combine all sequences into one list for distance matrix computation
 all_sequences = alpha_sequences + beta_sequences + delta_sequences + gamma_sequences
